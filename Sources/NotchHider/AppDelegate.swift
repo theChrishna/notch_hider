@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let overlays = OverlayManager()
@@ -79,6 +80,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         Prefs.cleanExit = true
     }
 
+    /// Launching the app again (Finder, Spotlight) while it runs has no Dock icon to click, so show the settings.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        openSettings()
+        return false
+    }
+
     private func offerRecovery() {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
@@ -100,7 +107,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func barDisplays() -> Set<CGDirectDisplayID> {
         guard Prefs.enabled else { return [] }
-        return Prefs.mode == "overlay" ? Set(targets().map(\.displayID)) : wallpaper.needsOverlay
+        // Overlay mode, or wallpaper mode where the wallpaper can't be edited. When overlays should survive Mission Control
+        // the bar must be a window too: the wallpaper itself is blurred away there.
+        if Prefs.mode == "overlay" || Prefs.showInMissionControl { return Set(targets().map(\.displayID)) }
+        return wallpaper.needsOverlay
     }
 
     /// Single entry point after any event: restores, regenerates or removes things as settings dictate.
@@ -153,9 +163,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refresh()
     }
 
+    /// The SwiftUI Settings scene can't be opened from an accessory app's menu, so host the view in our own window.
+    private lazy var settingsWindow: NSWindow = {
+        let w = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
+        w.title = "NotchHider Settings"
+        w.styleMask = [.titled, .closable]
+        w.isReleasedWhenClosed = false
+        w.center()
+        return w
+    }()
+
     @objc private func openSettings() {
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        settingsWindow.makeKeyAndOrderFront(nil)
     }
 
     @objc private func setMode(_ item: NSMenuItem) { Prefs.mode = item.tag == 1 ? "overlay" : "wallpaper"; prefsChanged() }

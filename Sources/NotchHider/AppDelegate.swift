@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         add(menu, "Rounded corners", #selector(toggleCorners))
         add(menu, "Bottom corners too", #selector(toggleBottom))
         add(menu, "Apply to all screens", #selector(toggleAll))
+        add(menu, "Keep overlays in Mission Control", #selector(toggleMissionControl))
         let modeItem = NSMenuItem(title: "Mode", action: nil, keyEquivalent: "")
         let modeMenu = NSMenu()
         for (title, tag) in [("Wallpaper", 0), ("Overlay", 1)] {
@@ -135,6 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case #selector(toggleCorners): item.state = Prefs.cornersEnabled ? .on : .off
             case #selector(toggleBottom): item.state = Prefs.bottomCorners ? .on : .off
             case #selector(toggleAll): item.state = Prefs.allScreens ? .on : .off
+            case #selector(toggleMissionControl): item.state = Prefs.showInMissionControl ? .on : .off
             default:
                 if item.title == "Mode" {
                     item.submenu?.items.forEach { $0.state = ($0.tag == 1) == (Prefs.mode == "overlay") ? .on : .off }
@@ -162,6 +164,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func toggleEnabled() { Prefs.enabled.toggle(); refresh() }
     @objc private func toggleCorners() { Prefs.cornersEnabled.toggle(); refresh() }
     @objc private func toggleBottom() { Prefs.bottomCorners.toggle(); refresh() }
+    @objc private func toggleMissionControl() { Prefs.showInMissionControl.toggle(); prefsChanged() }
     @objc private func toggleAll() { Prefs.allScreens.toggle(); refresh() }
     @objc private func setRadius(_ item: NSMenuItem) { Prefs.cornerRadius = Double(item.tag); refresh() }
 

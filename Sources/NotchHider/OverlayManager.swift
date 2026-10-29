@@ -121,7 +121,7 @@ final class OverlayManager {
         w.hasShadow = false
         w.ignoresMouseEvents = true
         w.isReleasedWhenClosed = false
-        w.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        w.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle]
         return w
     }
 
@@ -138,9 +138,10 @@ final class OverlayManager {
         w.hasShadow = false
         w.ignoresMouseEvents = true
         w.isReleasedWhenClosed = false
+        // .transient (not .stationary) so Mission Control / Exposé hides the corners with the menu bar.
         // Corners sit below the menu bar so they never cover its items; .statusBar keeps them above app windows.
         w.level = .statusBar
-        w.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
+        w.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle, .fullScreenAuxiliary]
         return w
     }
 }

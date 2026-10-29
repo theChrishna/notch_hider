@@ -59,7 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         wallpaper.onChange = { [weak self] in
             guard let self else { return }
-            self.overlays.reconcile(barDisplays: self.barDisplays())
+            self.reconcileOverlays()
         }
         // The system posts this when the desktop picture changes (undocumented; we only log and re-check).
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(changed(_:)),
@@ -109,7 +109,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } else {
             wallpaper.apply(targets: targets())
         }
-        overlays.reconcile(barDisplays: barDisplays())
+        reconcileOverlays()
+    }
+
+    private func reconcileOverlays() {
+        let bars = barDisplays()
+        overlays.reconcile(barDisplays: bars, blackDisplays: bars.union(Prefs.enabled ? wallpaper.editedDisplays : []))
     }
 
     private func add(_ menu: NSMenu, _ title: String, _ sel: Selector) {

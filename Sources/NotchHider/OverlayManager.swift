@@ -62,10 +62,12 @@ final class OverlayManager {
     private var bars: [CGDirectDisplayID: CornerWindow] = [:]
 
     /// `barDisplays`: displays that need the black overlay bar (overlay mode, or wallpaper-mode fallback).
-    func reconcile(barDisplays: Set<CGDirectDisplayID> = []) {
+    /// `blackDisplays`: displays whose menu bar is actually black right now; corners are only drawn there,
+    /// so they never appear against a normal menu bar.
+    func reconcile(barDisplays: Set<CGDirectDisplayID> = [], blackDisplays: Set<CGDirectDisplayID>) {
         reconcileBars(barDisplays)
         let wanted: [ScreenGeometry] = Prefs.enabled && Prefs.cornersEnabled
-            ? ScreenGeometry.all().filter { Prefs.allScreens || $0.hasNotch } : []
+            ? ScreenGeometry.all().filter { (Prefs.allScreens || $0.hasNotch) && blackDisplays.contains($0.displayID) } : []
         let ids = Set(wanted.map(\.displayID))
         for id in windows.keys where !ids.contains(id) { removeWindows(for: id) }
 

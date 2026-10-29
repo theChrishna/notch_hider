@@ -76,6 +76,14 @@ final class WallpaperManager {
         }
     }
 
+    /// Displays whose current Space is showing our black-banded wallpaper right now (read live, so Space switches count).
+    var editedDisplays: Set<CGDirectDisplayID> {
+        Set(NSScreen.screens.compactMap { s in
+            guard let g = records[Self.uuid(for: s)]?.generatedPath, ws.desktopImageURL(for: s)?.path == g else { return nil }
+            return Self.displayID(of: s)
+        })
+    }
+
     func apply(targets: [ScreenGeometry]) {
         if busy { pendingTargets = targets; return }
         busy = true

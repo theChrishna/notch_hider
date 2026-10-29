@@ -24,6 +24,11 @@ enum Prefs {
         get { defaults.bool(forKey: "allScreens") }
         set { defaults.set(newValue, forKey: "allScreens") }
     }
+    /// Keep the corners / overlay bar visible in Mission Control (.stationary) instead of hiding them (.transient).
+    static var showInMissionControl: Bool {
+        get { defaults.bool(forKey: "showInMissionControl") }
+        set { defaults.set(newValue, forKey: "showInMissionControl") }
+    }
     /// "wallpaper" or "overlay"
     static var mode: String {
         get { defaults.string(forKey: "mode") ?? "wallpaper" }
@@ -41,6 +46,6 @@ enum Prefs {
     }
     /// Changes whenever a setting that affects layout changes (ignores unrelated defaults writes).
     static var signature: String {
-        "\(enabled)\(cornersEnabled)\(cornerRadius)\(bottomCorners)\(allScreens)\(mode)\(barLevel)"
+        "\(enabled)\(cornersEnabled)\(cornerRadius)\(bottomCorners)\(allScreens)\(mode)\(barLevel)\(showInMissionControl)"
     }
 }

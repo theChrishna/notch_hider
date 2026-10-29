@@ -85,10 +85,16 @@ final class OverlayManager {
                 let y = corner.isTop ? geo.frame.maxY - geo.menuBarHeight - radius : geo.frame.minY
                 win.setFrame(NSRect(x: x, y: y, width: radius, height: radius), display: false)
                 (win.contentView as? CornerView)?.update(radius: radius, scale: geo.backingScale)
+                win.collectionBehavior = Self.behavior(extra: .fullScreenAuxiliary)
                 win.orderFrontRegardless()
             }
             windows[geo.displayID] = set
         }
+    }
+
+    /// .transient is hidden by Mission Control / Exposé; .stationary stays visible there. User-selectable.
+    private static func behavior(extra: NSWindow.CollectionBehavior = []) -> NSWindow.CollectionBehavior {
+        [.canJoinAllSpaces, .ignoresCycle, Prefs.showInMissionControl ? .stationary : .transient].reduce(extra) { $0.union($1) }
     }
 
     func removeAll() {
@@ -109,6 +115,7 @@ final class OverlayManager {
             let win = bars[id] ?? makeBar()
             bars[id] = win
             win.level = NSWindow.Level(rawValue: Prefs.barLevel)
+            win.collectionBehavior = Self.behavior()
             win.setFrame(NSRect(x: geo.frame.minX, y: geo.frame.maxY - h, width: geo.frame.width, height: h), display: true)
             win.orderFrontRegardless()
         }
@@ -121,7 +128,7 @@ final class OverlayManager {
         w.hasShadow = false
         w.ignoresMouseEvents = true
         w.isReleasedWhenClosed = false
-        w.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle]
+        w.collectionBehavior = Self.behavior()
         return w
     }
 
@@ -141,7 +148,7 @@ final class OverlayManager {
         // .transient (not .stationary) so Mission Control / Exposé hides the corners with the menu bar.
         // Corners sit below the menu bar so they never cover its items; .statusBar keeps them above app windows.
         w.level = .statusBar
-        w.collectionBehavior = [.canJoinAllSpaces, .transient, .ignoresCycle, .fullScreenAuxiliary]
+        w.collectionBehavior = Self.behavior(extra: .fullScreenAuxiliary)
         return w
     }
 }

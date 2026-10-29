@@ -6,6 +6,7 @@ struct SettingsView: View {
     @AppStorage("cornerRadius") private var cornerRadius = 20.0
     @AppStorage("bottomCorners") private var bottomCorners = false
     @AppStorage("allScreens") private var allScreens = false
+    @AppStorage("showInMissionControl") private var showInMissionControl = false
     @AppStorage("mode") private var mode = "wallpaper"
     @AppStorage("barLevel") private var barLevel = 23
 
@@ -14,6 +15,7 @@ struct SettingsView: View {
             Section {
                 Toggle("Enable NotchHider", isOn: $enabled)
                 Toggle("Apply to all screens", isOn: $allScreens)
+                Toggle("Keep overlays visible in Mission Control", isOn: $showInMissionControl)
                 Picker("Black bar method", selection: $mode) {
                     Text("Edit wallpaper").tag("wallpaper")
                     Text("Overlay window").tag("overlay")

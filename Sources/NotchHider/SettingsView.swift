@@ -8,7 +8,11 @@ struct SettingsView: View {
     @AppStorage("allScreens") private var allScreens = false
     @AppStorage("showInMissionControl") private var showInMissionControl = false
     @AppStorage("mode") private var mode = "wallpaper"
-    @AppStorage("barLevel") private var barLevel = 23
+    @AppStorage("barLevel") private var storedBarLevel = 23
+    private var barLevel: Binding<Int> {
+        Binding(get: { min(max(storedBarLevel, Prefs.barLevelRange.lowerBound), Prefs.barLevelRange.upperBound) },
+                set: { storedBarLevel = $0 })
+    }
 
     var body: some View {
         Form {
@@ -34,7 +38,7 @@ struct SettingsView: View {
                     .disabled(!cornersEnabled)
             }
             Section("Advanced") {
-                Stepper("Overlay bar window level: \(barLevel)", value: $barLevel, in: 0...30)
+                Stepper("Overlay bar window level: \(barLevel.wrappedValue)", value: barLevel, in: Prefs.barLevelRange)
             }
         }
         .formStyle(.grouped)

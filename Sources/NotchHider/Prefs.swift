@@ -35,8 +35,11 @@ enum Prefs {
         set { defaults.set(newValue, forKey: "mode") }
     }
     /// Window level of the overlay bar. 23 = just below the menu bar (kCGMainMenuWindowLevel is 24).
+    /// Clamped to 21...24: on macOS 27 Mission Control's own windows use layers up to 20, so a lower bar gets
+    /// covered by its blur; 24 is the menu bar itself.
+    static let barLevelRange = 21...24
     static var barLevel: Int {
-        get { defaults.object(forKey: "barLevel") as? Int ?? 23 }
+        get { min(max(defaults.object(forKey: "barLevel") as? Int ?? 23, barLevelRange.lowerBound), barLevelRange.upperBound) }
         set { defaults.set(newValue, forKey: "barLevel") }
     }
     /// False from launch until a clean quit; true at next launch means the previous run crashed.

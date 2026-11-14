@@ -128,6 +128,11 @@ final class WallpaperManager {
         } else if current.path.hasPrefix(Self.directory.path) {
             // One of our files, but not the one we expect (e.g. records lost). Without the original we can't regenerate.
             if record == nil { return fallback(id, "own file with unknown original — use Restore") }
+        } else if let reason = Self.uneditableReason(current) {
+            // A system / placeholder wallpaper (e.g. DefaultDesktop.heic, which macOS reports for any wallpaper that
+            // isn't a plain file). Never record it as an "original" and never set an edited copy of it.
+            if record != nil { records[uuid] = nil; persist() }
+            return fallback(id, reason)
         } else {
             // The user (or the system) picked something new: remember it as the original.
             if let old = record?.generatedPath { try? FileManager.default.removeItem(atPath: old) }
@@ -138,8 +143,9 @@ final class WallpaperManager {
         guard var rec = record else { return nil }
         let original = URL(fileURLWithPath: rec.originalPath)
         if let reason = Self.uneditableReason(original) {
-            // Keep the original on record but don't touch the screen.
-            records[uuid]?.generatedPath = nil; rec.generatedPath = nil
+            // Original became uneditable (e.g. a record from an older build). If our edited copy is showing, put the
+            // original back and drop the record instead of leaving a generated image in place.
+            restore(screen)
             return fallback(id, reason)
         }
 
@@ -250,6 +256,13 @@ final class WallpaperManager {
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
         if isDir.boolValue { return "folder / rotating wallpaper" }
         let p = url.path
+        // macOS reports /System/Library/CoreServices/DefaultDesktop.heic (a symlink to the default aerial) for any
+        // wallpaper that isn't a plain image file, so system locations are never treated as the user's photo.
+        let resolved = url.resolvingSymlinksInPath().path
+        let systemPrefixes = ["/System/", "/Library/Desktop Pictures", "/Library/Application Support/com.apple", "/Library/Caches"]
+        if systemPrefixes.contains(where: { p.hasPrefix($0) || resolved.hasPrefix($0) }) || p.contains("DefaultDesktop") {
+            return "system / Apple wallpaper (not a plain image file)"
+        }
         if p.hasPrefix("/System/Library/Desktop Pictures") || p.contains("com.apple.wallpaper")
             || p.contains("Aerial") || p.contains("mobileAssets") || p.contains("MobileAsset") {
             return "Apple built-in / aerial wallpaper"

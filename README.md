@@ -91,6 +91,7 @@ Quit the app, lock the screen once more and confirm there is no black strip left
 
 - Menu bar text turning white relies on macOS tinting from the wallpaper under the menu bar. Expected to work in wallpaper mode; **not yet verified** in light and dark mode. In overlay mode the tint comes from the wallpaper underneath, so on a bright wallpaper in light mode the menu text will probably be black on black.
 - Whether `setDesktopImageURL` applies to every Space or only the current one is unverified. The app re-checks on each Space change.
+- **Apple / stock wallpapers are never edited.** For any wallpaper that isn't a plain image file (aerials, dynamic and stock Apple wallpapers, or when the chosen file is missing) macOS reports `/System/Library/CoreServices/DefaultDesktop.heic`, a symlink to the default aerial. Earlier builds treated that as the user's photo and replaced the desktop with an edited copy of it (the stock wallpaper kept coming back). System locations are now excluded and the overlay bar is used; an edit left by an older build is undone on launch. To use wallpaper mode, pick a plain image file.
 - If the original wallpaper file no longer exists (macOS may still display a cached copy), it can't be edited and the overlay bar is used instead.
 - Centered wallpapers are approximate (they depend on image DPI). "Tile" is not supported.
 - Menu bar height (38 pt) and safe-area height (37.5 pt) differ by 0.5 pt on the tested machine; the band uses the menu bar height.
